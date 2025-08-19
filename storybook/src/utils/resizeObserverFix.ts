@@ -364,6 +364,62 @@ export const applyResizeObserverFix = () => {
   }
 };
 
+// Add additional aggressive error suppression
+function addAggressiveErrorSuppression() {
+  if (typeof window === "undefined") return;
+
+  // Override any setTimeout/setInterval calls that might contain ResizeObserver errors
+  const originalSetTimeout = window.setTimeout;
+  const originalSetInterval = window.setInterval;
+
+  window.setTimeout = function(callback: Function, delay?: number, ...args: any[]) {
+    const wrappedCallback = function() {
+      try {
+        return callback.apply(this, args);
+      } catch (error) {
+        if (isResizeObserverErrorObj(error)) {
+          // Silently suppress
+          return;
+        }
+        throw error;
+      }
+    };
+    return originalSetTimeout.call(this, wrappedCallback, delay);
+  };
+
+  window.setInterval = function(callback: Function, delay?: number, ...args: any[]) {
+    const wrappedCallback = function() {
+      try {
+        return callback.apply(this, args);
+      } catch (error) {
+        if (isResizeObserverErrorObj(error)) {
+          // Silently suppress
+          return;
+        }
+        throw error;
+      }
+    };
+    return originalSetInterval.call(this, wrappedCallback, delay);
+  };
+
+  // Override requestAnimationFrame
+  const originalRAF = window.requestAnimationFrame;
+  window.requestAnimationFrame = function(callback: FrameRequestCallback) {
+    const wrappedCallback = function(time: number) {
+      try {
+        return callback(time);
+      } catch (error) {
+        if (isResizeObserverErrorObj(error)) {
+          // Silently suppress
+          return;
+        }
+        throw error;
+      }
+    };
+    return originalRAF.call(this, wrappedCallback);
+  };
+}
+
 // Apply the fix immediately when the module is imported
 if (typeof window !== "undefined") {
   // Use multiple approaches to ensure the fix is applied early
