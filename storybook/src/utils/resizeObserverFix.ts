@@ -9,13 +9,18 @@ let originalConsoleLog: typeof console.log;
 // All possible ResizeObserver error messages including new variants
 const RESIZE_OBSERVER_ERRORS = [
   "ResizeObserver loop completed with undelivered notifications.",
-  "ResizeObserver loop limit exceeded",
   "ResizeObserver loop completed with undelivered notifications",
-  "Non-Error exception captured with keys",
+  "ResizeObserver loop limit exceeded",
   "ResizeObserver loop exceeded",
   "ResizeObserver: loop limit exceeded",
+  "Non-Error exception captured with keys",
   "loop limit exceeded",
   "undelivered notifications",
+  "resizeobserver loop",
+  "resizeobserver.*loop",
+  "loop.*resizeobserver",
+  "observer.*loop",
+  "observation.*loop",
 ];
 
 // Check if a message is a ResizeObserver error
