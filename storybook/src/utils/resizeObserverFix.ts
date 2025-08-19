@@ -310,7 +310,10 @@ function addPolyfillIfNeeded() {
 
               this.callback(entries, this);
             } catch (error) {
-              console.debug("ResizeObserver polyfill error:", error);
+              // Silently handle polyfill errors
+              if (!isResizeObserverErrorObj(error)) {
+                console.debug("ResizeObserver polyfill error:", error);
+              }
             }
           }
 
