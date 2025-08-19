@@ -353,6 +353,7 @@ export const applyResizeObserverFix = () => {
     createResizeObserverWrapper();
     suppressConsoleErrors();
     setupGlobalErrorHandler();
+    addAggressiveErrorSuppression();
 
     isFixApplied = true;
     // Silent application - no console output
