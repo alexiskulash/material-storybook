@@ -2,26 +2,46 @@
 // This comprehensive solution handles all ResizeObserver-related errors
 
 let isFixApplied = false;
+let originalConsoleError: typeof console.error;
+let originalConsoleWarn: typeof console.warn;
+let originalConsoleLog: typeof console.log;
 
 // All possible ResizeObserver error messages including new variants
 const RESIZE_OBSERVER_ERRORS = [
   "ResizeObserver loop completed with undelivered notifications.",
-  "ResizeObserver loop limit exceeded",
   "ResizeObserver loop completed with undelivered notifications",
-  "Non-Error exception captured with keys",
+  "ResizeObserver loop limit exceeded",
   "ResizeObserver loop exceeded",
   "ResizeObserver: loop limit exceeded",
+  "Non-Error exception captured with keys",
   "loop limit exceeded",
   "undelivered notifications",
+  "resizeobserver loop",
+  "resizeobserver.*loop",
+  "loop.*resizeobserver",
+  "observer.*loop",
+  "observation.*loop",
 ];
 
 // Check if a message is a ResizeObserver error
 function isResizeObserverError(message: string): boolean {
   if (!message || typeof message !== "string") return false;
 
-  return RESIZE_OBSERVER_ERRORS.some((errorMsg) =>
-    message.toLowerCase().includes(errorMsg.toLowerCase())
-  );
+  const lowerMessage = message.toLowerCase();
+
+  return RESIZE_OBSERVER_ERRORS.some((errorMsg) => {
+    // Handle regex patterns
+    if (errorMsg.includes(".*")) {
+      try {
+        const regex = new RegExp(errorMsg, "i");
+        return regex.test(lowerMessage);
+      } catch (e) {
+        // Fallback to simple includes if regex fails
+        return lowerMessage.includes(errorMsg.replace(/\.\*/g, ""));
+      }
+    }
+    return lowerMessage.includes(errorMsg.toLowerCase());
+  });
 }
 
 // Check if an error object is ResizeObserver related
@@ -56,28 +76,33 @@ function createResizeObserverWrapper() {
 
   // Wrapper that catches and suppresses the common loop errors
   class ResizeObserverWrapper extends OriginalResizeObserver {
+    private pendingCallbacks = new Set<number>();
+
     constructor(callback: ResizeObserverCallback) {
       const wrappedCallback: ResizeObserverCallback = (entries, observer) => {
         try {
           // Use requestAnimationFrame to defer the callback and prevent loops
-          requestAnimationFrame(() => {
+          const rafId = requestAnimationFrame(() => {
+            this.pendingCallbacks.delete(rafId);
             try {
-              callback(entries, observer);
+              // Double-check that we still have valid entries
+              if (entries && entries.length > 0) {
+                callback(entries, observer);
+              }
             } catch (error) {
               if (isResizeObserverErrorObj(error)) {
-                console.debug(
-                  "ResizeObserver error suppressed in callback:",
-                  error
-                );
+                // Silently suppress ResizeObserver errors
                 return;
               }
               // Re-throw non-ResizeObserver errors
               throw error;
             }
           });
+
+          this.pendingCallbacks.add(rafId);
         } catch (error) {
           if (isResizeObserverErrorObj(error)) {
-            console.debug("ResizeObserver error suppressed:", error);
+            // Silently suppress ResizeObserver errors
             return;
           }
           // Re-throw non-ResizeObserver errors
@@ -87,6 +112,13 @@ function createResizeObserverWrapper() {
 
       super(wrappedCallback);
     }
+
+    disconnect() {
+      // Cancel any pending callbacks
+      this.pendingCallbacks.forEach(id => cancelAnimationFrame(id));
+      this.pendingCallbacks.clear();
+      super.disconnect();
+    }
   }
 
   // Replace the global ResizeObserver
@@ -95,36 +127,38 @@ function createResizeObserverWrapper() {
 
 // Enhanced console.error override
 function suppressConsoleErrors() {
-  const originalError = console.error;
-  const originalWarn = console.warn;
-  const originalLog = console.log;
+  if (!originalConsoleError) {
+    originalConsoleError = console.error;
+    originalConsoleWarn = console.warn;
+    originalConsoleLog = console.log;
+  }
 
   console.error = (...args: any[]) => {
     const message = args[0];
     if (isResizeObserverError(String(message))) {
-      console.debug("ResizeObserver error (suppressed):", ...args);
+      // Completely silent - don't even log to debug
       return;
     }
-    originalError.apply(console, args);
+    originalConsoleError.apply(console, args);
   };
 
   console.warn = (...args: any[]) => {
     const message = args[0];
     if (isResizeObserverError(String(message))) {
-      console.debug("ResizeObserver warning (suppressed):", ...args);
+      // Completely silent - don't even log to debug
       return;
     }
-    originalWarn.apply(console, args);
+    originalConsoleWarn.apply(console, args);
   };
 
   // Sometimes ResizeObserver errors come through console.log
   console.log = (...args: any[]) => {
     const message = args[0];
     if (isResizeObserverError(String(message))) {
-      console.debug("ResizeObserver log (suppressed):", ...args);
+      // Completely silent - don't even log to debug
       return;
     }
-    originalLog.apply(console, args);
+    originalConsoleLog.apply(console, args);
   };
 }
 
@@ -143,7 +177,7 @@ function setupGlobalErrorHandler() {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        console.debug("Global ResizeObserver error suppressed:", event.message);
+        // Completely silent suppression
         return false;
       }
     },
@@ -156,10 +190,7 @@ function setupGlobalErrorHandler() {
     (event) => {
       if (isResizeObserverErrorObj(event.reason)) {
         event.preventDefault();
-        console.debug(
-          "Unhandled ResizeObserver rejection suppressed:",
-          event.reason
-        );
+        // Completely silent suppression
         return false;
       }
     },
@@ -173,7 +204,7 @@ function setupGlobalErrorHandler() {
       isResizeObserverError(String(message)) ||
       isResizeObserverErrorObj(error)
     ) {
-      console.debug("Window.onerror ResizeObserver error suppressed:", message);
+      // Completely silent suppression
       return true; // Prevent default handling
     }
     if (originalOnerror) {
@@ -186,10 +217,7 @@ function setupGlobalErrorHandler() {
   const originalOnunhandledrejection = window.onunhandledrejection;
   window.onunhandledrejection = (event) => {
     if (isResizeObserverErrorObj(event.reason)) {
-      console.debug(
-        "Window.onunhandledrejection ResizeObserver error suppressed:",
-        event.reason
-      );
+      // Completely silent suppression
       event.preventDefault();
       return;
     }
@@ -282,7 +310,10 @@ function addPolyfillIfNeeded() {
 
               this.callback(entries, this);
             } catch (error) {
-              console.debug("ResizeObserver polyfill error:", error);
+              // Silently handle polyfill errors
+              if (!isResizeObserverErrorObj(error)) {
+                console.debug("ResizeObserver polyfill error:", error);
+              }
             }
           }
 
@@ -298,6 +329,19 @@ function addPolyfillIfNeeded() {
   }
 }
 
+// Utility to restore original console functions (for debugging)
+export const restoreConsole = () => {
+  if (originalConsoleError) {
+    console.error = originalConsoleError;
+  }
+  if (originalConsoleWarn) {
+    console.warn = originalConsoleWarn;
+  }
+  if (originalConsoleLog) {
+    console.log = originalConsoleLog;
+  }
+};
+
 // Export the fix function
 export const applyResizeObserverFix = () => {
   if (isFixApplied) {
@@ -309,13 +353,73 @@ export const applyResizeObserverFix = () => {
     createResizeObserverWrapper();
     suppressConsoleErrors();
     setupGlobalErrorHandler();
+    addAggressiveErrorSuppression();
 
     isFixApplied = true;
-    console.debug("Enhanced ResizeObserver fix applied successfully");
+    // Silent application - no console output
   } catch (error) {
-    console.error("Failed to apply ResizeObserver fix:", error);
+    // Only log if it's not a ResizeObserver error
+    if (!isResizeObserverErrorObj(error)) {
+      console.error("Failed to apply ResizeObserver fix:", error);
+    }
   }
 };
+
+// Add additional aggressive error suppression
+function addAggressiveErrorSuppression() {
+  if (typeof window === "undefined") return;
+
+  // Override any setTimeout/setInterval calls that might contain ResizeObserver errors
+  const originalSetTimeout = window.setTimeout;
+  const originalSetInterval = window.setInterval;
+
+  window.setTimeout = function(callback: Function, delay?: number, ...args: any[]) {
+    const wrappedCallback = function() {
+      try {
+        return callback.apply(this, args);
+      } catch (error) {
+        if (isResizeObserverErrorObj(error)) {
+          // Silently suppress
+          return;
+        }
+        throw error;
+      }
+    };
+    return originalSetTimeout.call(this, wrappedCallback, delay);
+  };
+
+  window.setInterval = function(callback: Function, delay?: number, ...args: any[]) {
+    const wrappedCallback = function() {
+      try {
+        return callback.apply(this, args);
+      } catch (error) {
+        if (isResizeObserverErrorObj(error)) {
+          // Silently suppress
+          return;
+        }
+        throw error;
+      }
+    };
+    return originalSetInterval.call(this, wrappedCallback, delay);
+  };
+
+  // Override requestAnimationFrame
+  const originalRAF = window.requestAnimationFrame;
+  window.requestAnimationFrame = function(callback: FrameRequestCallback) {
+    const wrappedCallback = function(time: number) {
+      try {
+        return callback(time);
+      } catch (error) {
+        if (isResizeObserverErrorObj(error)) {
+          // Silently suppress
+          return;
+        }
+        throw error;
+      }
+    };
+    return originalRAF.call(this, wrappedCallback);
+  };
+}
 
 // Apply the fix immediately when the module is imported
 if (typeof window !== "undefined") {

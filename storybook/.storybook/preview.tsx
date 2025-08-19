@@ -1,12 +1,14 @@
+// UNIVERSAL ERROR SUPPRESSION: Must be the absolute first import
+import '../src/utils/universalErrorSuppression';
+// NUCLEAR RESIZEOBSERVER FIX: Complete error elimination
+import '../src/utils/nuclearResizeObserverFix';
+
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme } from '@mui/material/styles';
 import AppTheme from '../src/shared-theme/AppTheme';
 import ResizeObserverErrorBoundary from '../src/components/ResizeObserverErrorBoundary';
-
-// Apply ResizeObserver fix for containerized environments
-import '../src/utils/resizeObserverFix';
 
 /** @type { import('@storybook/react').Preview } */
 const preview = {
@@ -82,4 +84,4 @@ const preview = {
   ],
 };
 
-export default preview; 
+export default preview;

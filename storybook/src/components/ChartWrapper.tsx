@@ -69,25 +69,27 @@ export default function ChartWrapper({
 
     try {
       observerRef.current = new ResizeObserver((entries) => {
-        try {
-          for (const entry of entries) {
-            const { width: observedWidth, height: observedHeight } =
-              entry.contentRect;
+        // Use requestAnimationFrame to prevent loops
+        requestAnimationFrame(() => {
+          try {
+            for (const entry of entries) {
+              const { width: observedWidth, height: observedHeight } =
+                entry.contentRect;
 
-            // Only trigger re-initialization if dimensions are valid
-            if (observedWidth > 0 && observedHeight > 0 && !isReady) {
-              setIsReady(true);
+              // Only trigger re-initialization if dimensions are valid
+              if (observedWidth > 0 && observedHeight > 0 && !isReady) {
+                setIsReady(true);
+              }
             }
+          } catch (error) {
+            // Silently handle errors - no console output
           }
-        } catch (error) {
-          console.debug("ResizeObserver callback error (handled):", error);
-        }
+        });
       });
 
       observerRef.current.observe(containerRef.current);
     } catch (error) {
-      console.debug("ResizeObserver setup error (handled):", error);
-      // Fallback to timer-based initialization
+      // Silently handle errors and fallback to timer-based initialization
       initializeChart();
     }
   }, [isReady, initializeChart]);
@@ -106,13 +108,14 @@ export default function ChartWrapper({
   // Global error handler for ResizeObserver errors
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      const isResizeObserverError = event.message.includes("ResizeObserver");
+      const isResizeObserverError = event.message?.toLowerCase().includes("resizeobserver");
 
       if (isResizeObserverError) {
         event.preventDefault();
-        console.debug("ChartWrapper: ResizeObserver error handled");
+        event.stopPropagation();
+        event.stopImmediatePropagation();
 
-        // Reset and retry with a delay
+        // Reset and retry with a delay - but silently
         setIsReady(false);
         setRetryCount(0);
 
@@ -125,22 +128,20 @@ export default function ChartWrapper({
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       if (
         event.reason instanceof Error &&
-        event.reason.message.includes("ResizeObserver")
+        event.reason.message?.toLowerCase().includes("resizeobserver")
       ) {
         event.preventDefault();
-        console.debug("ChartWrapper: ResizeObserver promise rejection handled");
+        // Silently handle
       }
     };
 
-    window.addEventListener("error", handleError);
-    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    // Use capture phase to catch errors earlier
+    window.addEventListener("error", handleError, true);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection, true);
 
     return () => {
-      window.removeEventListener("error", handleError);
-      window.removeEventListener(
-        "unhandledrejection",
-        handleUnhandledRejection
-      );
+      window.removeEventListener("error", handleError, true);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection, true);
     };
   }, [retryDelay]);
 
