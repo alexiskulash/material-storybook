@@ -342,9 +342,12 @@ export const applyResizeObserverFix = () => {
     setupGlobalErrorHandler();
 
     isFixApplied = true;
-    console.debug("Enhanced ResizeObserver fix applied successfully");
+    // Silent application - no console output
   } catch (error) {
-    console.error("Failed to apply ResizeObserver fix:", error);
+    // Only log if it's not a ResizeObserver error
+    if (!isResizeObserverErrorObj(error)) {
+      console.error("Failed to apply ResizeObserver fix:", error);
+    }
   }
 };
 
