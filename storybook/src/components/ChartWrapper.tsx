@@ -69,25 +69,27 @@ export default function ChartWrapper({
 
     try {
       observerRef.current = new ResizeObserver((entries) => {
-        try {
-          for (const entry of entries) {
-            const { width: observedWidth, height: observedHeight } =
-              entry.contentRect;
+        // Use requestAnimationFrame to prevent loops
+        requestAnimationFrame(() => {
+          try {
+            for (const entry of entries) {
+              const { width: observedWidth, height: observedHeight } =
+                entry.contentRect;
 
-            // Only trigger re-initialization if dimensions are valid
-            if (observedWidth > 0 && observedHeight > 0 && !isReady) {
-              setIsReady(true);
+              // Only trigger re-initialization if dimensions are valid
+              if (observedWidth > 0 && observedHeight > 0 && !isReady) {
+                setIsReady(true);
+              }
             }
+          } catch (error) {
+            // Silently handle errors - no console output
           }
-        } catch (error) {
-          console.debug("ResizeObserver callback error (handled):", error);
-        }
+        });
       });
 
       observerRef.current.observe(containerRef.current);
     } catch (error) {
-      console.debug("ResizeObserver setup error (handled):", error);
-      // Fallback to timer-based initialization
+      // Silently handle errors and fallback to timer-based initialization
       initializeChart();
     }
   }, [isReady, initializeChart]);
