@@ -127,36 +127,38 @@ function createResizeObserverWrapper() {
 
 // Enhanced console.error override
 function suppressConsoleErrors() {
-  const originalError = console.error;
-  const originalWarn = console.warn;
-  const originalLog = console.log;
+  if (!originalConsoleError) {
+    originalConsoleError = console.error;
+    originalConsoleWarn = console.warn;
+    originalConsoleLog = console.log;
+  }
 
   console.error = (...args: any[]) => {
     const message = args[0];
     if (isResizeObserverError(String(message))) {
-      console.debug("ResizeObserver error (suppressed):", ...args);
+      // Completely silent - don't even log to debug
       return;
     }
-    originalError.apply(console, args);
+    originalConsoleError.apply(console, args);
   };
 
   console.warn = (...args: any[]) => {
     const message = args[0];
     if (isResizeObserverError(String(message))) {
-      console.debug("ResizeObserver warning (suppressed):", ...args);
+      // Completely silent - don't even log to debug
       return;
     }
-    originalWarn.apply(console, args);
+    originalConsoleWarn.apply(console, args);
   };
 
   // Sometimes ResizeObserver errors come through console.log
   console.log = (...args: any[]) => {
     const message = args[0];
     if (isResizeObserverError(String(message))) {
-      console.debug("ResizeObserver log (suppressed):", ...args);
+      // Completely silent - don't even log to debug
       return;
     }
-    originalLog.apply(console, args);
+    originalConsoleLog.apply(console, args);
   };
 }
 
