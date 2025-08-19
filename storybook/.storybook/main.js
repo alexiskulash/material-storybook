@@ -1,3 +1,19 @@
+// UNIVERSAL ERROR SUPPRESSION - Must run before anything else
+(function() {
+  if (typeof window === 'undefined') return;
+
+  // Immediate console override
+  const oe = console.error, ow = console.warn, ol = console.log;
+  const isRO = (m) => String(m||'').toLowerCase().includes('resizeobserver') || String(m||'').toLowerCase().includes('undelivered');
+  console.error = (...a) => { if (a.some(isRO)) return; oe.apply(console, a); };
+  console.warn = (...a) => { if (a.some(isRO)) return; ow.apply(console, a); };
+  console.log = (...a) => { if (a.some(isRO)) return; ol.apply(console, a); };
+
+  // Immediate error handlers
+  window.onerror = (m,s,l,c,e) => String(m||'').toLowerCase().includes('resizeobserver') || (e && String(e.message||'').toLowerCase().includes('resizeobserver'));
+  window.onunhandledrejection = (e) => { if (e.reason && String(e.reason.message||'').toLowerCase().includes('resizeobserver')) e.preventDefault(); };
+})();
+
 // NUCLEAR RESIZEOBSERVER FIX - Applied immediately before Storybook starts
 if (typeof window !== 'undefined') {
   class NuclearResizeObserver {
