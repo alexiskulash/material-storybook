@@ -2,6 +2,9 @@
 // This comprehensive solution handles all ResizeObserver-related errors
 
 let isFixApplied = false;
+let originalConsoleError: typeof console.error;
+let originalConsoleWarn: typeof console.warn;
+let originalConsoleLog: typeof console.log;
 
 // All possible ResizeObserver error messages including new variants
 const RESIZE_OBSERVER_ERRORS = [
