@@ -76,28 +76,33 @@ function createResizeObserverWrapper() {
 
   // Wrapper that catches and suppresses the common loop errors
   class ResizeObserverWrapper extends OriginalResizeObserver {
+    private pendingCallbacks = new Set<number>();
+
     constructor(callback: ResizeObserverCallback) {
       const wrappedCallback: ResizeObserverCallback = (entries, observer) => {
         try {
           // Use requestAnimationFrame to defer the callback and prevent loops
-          requestAnimationFrame(() => {
+          const rafId = requestAnimationFrame(() => {
+            this.pendingCallbacks.delete(rafId);
             try {
-              callback(entries, observer);
+              // Double-check that we still have valid entries
+              if (entries && entries.length > 0) {
+                callback(entries, observer);
+              }
             } catch (error) {
               if (isResizeObserverErrorObj(error)) {
-                console.debug(
-                  "ResizeObserver error suppressed in callback:",
-                  error
-                );
+                // Silently suppress ResizeObserver errors
                 return;
               }
               // Re-throw non-ResizeObserver errors
               throw error;
             }
           });
+
+          this.pendingCallbacks.add(rafId);
         } catch (error) {
           if (isResizeObserverErrorObj(error)) {
-            console.debug("ResizeObserver error suppressed:", error);
+            // Silently suppress ResizeObserver errors
             return;
           }
           // Re-throw non-ResizeObserver errors
@@ -106,6 +111,13 @@ function createResizeObserverWrapper() {
       };
 
       super(wrappedCallback);
+    }
+
+    disconnect() {
+      // Cancel any pending callbacks
+      this.pendingCallbacks.forEach(id => cancelAnimationFrame(id));
+      this.pendingCallbacks.clear();
+      super.disconnect();
     }
   }
 
