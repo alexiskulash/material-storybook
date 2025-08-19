@@ -204,7 +204,7 @@ function setupGlobalErrorHandler() {
       isResizeObserverError(String(message)) ||
       isResizeObserverErrorObj(error)
     ) {
-      console.debug("Window.onerror ResizeObserver error suppressed:", message);
+      // Completely silent suppression
       return true; // Prevent default handling
     }
     if (originalOnerror) {
@@ -217,10 +217,7 @@ function setupGlobalErrorHandler() {
   const originalOnunhandledrejection = window.onunhandledrejection;
   window.onunhandledrejection = (event) => {
     if (isResizeObserverErrorObj(event.reason)) {
-      console.debug(
-        "Window.onunhandledrejection ResizeObserver error suppressed:",
-        event.reason
-      );
+      // Completely silent suppression
       event.preventDefault();
       return;
     }
