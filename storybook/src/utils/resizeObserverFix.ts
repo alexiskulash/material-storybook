@@ -329,6 +329,19 @@ function addPolyfillIfNeeded() {
   }
 }
 
+// Utility to restore original console functions (for debugging)
+export const restoreConsole = () => {
+  if (originalConsoleError) {
+    console.error = originalConsoleError;
+  }
+  if (originalConsoleWarn) {
+    console.warn = originalConsoleWarn;
+  }
+  if (originalConsoleLog) {
+    console.log = originalConsoleLog;
+  }
+};
+
 // Export the fix function
 export const applyResizeObserverFix = () => {
   if (isFixApplied) {
