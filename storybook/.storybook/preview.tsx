@@ -1,4 +1,6 @@
-// NUCLEAR RESIZEOBSERVER FIX: Complete error elimination - MUST BE FIRST
+// UNIVERSAL ERROR SUPPRESSION: Must be the absolute first import
+import '../src/utils/universalErrorSuppression';
+// NUCLEAR RESIZEOBSERVER FIX: Complete error elimination
 import '../src/utils/nuclearResizeObserverFix';
 
 import React from 'react';
