@@ -190,10 +190,7 @@ function setupGlobalErrorHandler() {
     (event) => {
       if (isResizeObserverErrorObj(event.reason)) {
         event.preventDefault();
-        console.debug(
-          "Unhandled ResizeObserver rejection suppressed:",
-          event.reason
-        );
+        // Completely silent suppression
         return false;
       }
     },
