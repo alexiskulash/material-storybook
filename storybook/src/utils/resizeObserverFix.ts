@@ -177,7 +177,7 @@ function setupGlobalErrorHandler() {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        console.debug("Global ResizeObserver error suppressed:", event.message);
+        // Completely silent suppression
         return false;
       }
     },
