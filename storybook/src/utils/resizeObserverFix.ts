@@ -27,9 +27,21 @@ const RESIZE_OBSERVER_ERRORS = [
 function isResizeObserverError(message: string): boolean {
   if (!message || typeof message !== "string") return false;
 
-  return RESIZE_OBSERVER_ERRORS.some((errorMsg) =>
-    message.toLowerCase().includes(errorMsg.toLowerCase())
-  );
+  const lowerMessage = message.toLowerCase();
+
+  return RESIZE_OBSERVER_ERRORS.some((errorMsg) => {
+    // Handle regex patterns
+    if (errorMsg.includes(".*")) {
+      try {
+        const regex = new RegExp(errorMsg, "i");
+        return regex.test(lowerMessage);
+      } catch (e) {
+        // Fallback to simple includes if regex fails
+        return lowerMessage.includes(errorMsg.replace(/\.\*/g, ""));
+      }
+    }
+    return lowerMessage.includes(errorMsg.toLowerCase());
+  });
 }
 
 // Check if an error object is ResizeObserver related
