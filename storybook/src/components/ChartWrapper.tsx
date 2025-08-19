@@ -108,13 +108,14 @@ export default function ChartWrapper({
   // Global error handler for ResizeObserver errors
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      const isResizeObserverError = event.message.includes("ResizeObserver");
+      const isResizeObserverError = event.message?.toLowerCase().includes("resizeobserver");
 
       if (isResizeObserverError) {
         event.preventDefault();
-        console.debug("ChartWrapper: ResizeObserver error handled");
+        event.stopPropagation();
+        event.stopImmediatePropagation();
 
-        // Reset and retry with a delay
+        // Reset and retry with a delay - but silently
         setIsReady(false);
         setRetryCount(0);
 
@@ -127,22 +128,20 @@ export default function ChartWrapper({
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       if (
         event.reason instanceof Error &&
-        event.reason.message.includes("ResizeObserver")
+        event.reason.message?.toLowerCase().includes("resizeobserver")
       ) {
         event.preventDefault();
-        console.debug("ChartWrapper: ResizeObserver promise rejection handled");
+        // Silently handle
       }
     };
 
-    window.addEventListener("error", handleError);
-    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    // Use capture phase to catch errors earlier
+    window.addEventListener("error", handleError, true);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection, true);
 
     return () => {
-      window.removeEventListener("error", handleError);
-      window.removeEventListener(
-        "unhandledrejection",
-        handleUnhandledRejection
-      );
+      window.removeEventListener("error", handleError, true);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection, true);
     };
   }, [retryDelay]);
 
