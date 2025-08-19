@@ -1,5 +1,5 @@
-// IMPORTANT: Apply ResizeObserver fix FIRST, before any other imports
-import '../src/utils/resizeObserverFix';
+// NUCLEAR RESIZEOBSERVER FIX: Complete error elimination - MUST BE FIRST
+import '../src/utils/nuclearResizeObserverFix';
 
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
