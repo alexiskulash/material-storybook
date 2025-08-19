@@ -17,7 +17,21 @@ const config = {
   },
   viteFinal: async (config) => {
     // Remove any alias or reference to 'main-project' or 'mui-vite-demo' as all components are now local.
+
+    // Inject ResizeObserver fix early in the build process
+    if (!config.define) {
+      config.define = {};
+    }
+
+    // Add the fix as an early import
+    if (!config.optimizeDeps) {
+      config.optimizeDeps = {};
+    }
+    if (!config.optimizeDeps.include) {
+      config.optimizeDeps.include = [];
+    }
+
     return config;
   },
 };
-export default config; 
+export default config;
