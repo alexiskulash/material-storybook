@@ -10,7 +10,7 @@ export interface AccessibleButtonProps extends Omit<MUIButtonProps, 'aria-label'
   ariaDescribedBy?: string;
   ariaControls?: string;
   ariaExpanded?: boolean;
-  ariaCurrent?: boolean | 'page' | 'step' | 'location' | 'date' | 'time';
+  ariaCurrent?: boolean | 'page' | 'step' | 'location' | 'date';
   ariaPressed?: boolean;
   
   // Loading state with accessibility
