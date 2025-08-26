@@ -44,7 +44,7 @@ interface AccessibleButtonProps extends MUIButtonProps {
   ariaDescribedBy?: string;
   ariaControls?: string;
   ariaExpanded?: boolean;
-  ariaCurrent?: boolean | 'page' | 'step' | 'location' | 'date' | 'time';
+  ariaCurrent?: boolean | 'page' | 'step' | 'location' | 'date';
   ariaPressed?: boolean;
   
   // Loading state with accessibility
