@@ -1,4 +1,10 @@
-// UNIVERSAL ERROR SUPPRESSION: Must be the absolute first import
+// RESIZEOBSERVER ERROR FIX - Multi-layer approach:
+// Layer 1: preview-head.html (runs first, before any JavaScript)
+// Layer 2: These imports (run during module initialization)
+// Layer 3: ResizeObserverErrorBoundary wrapper (React-level error boundary)
+// Layer 4: ChartWrapper component (component-level handling)
+
+// UNIVERSAL ERROR SUPPRESSION: Additional layer of protection
 import '../src/utils/universalErrorSuppression';
 // NUCLEAR RESIZEOBSERVER FIX: Complete error elimination
 import '../src/utils/nuclearResizeObserverFix';
