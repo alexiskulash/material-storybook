@@ -79,13 +79,49 @@ The fix uses a **defense-in-depth** approach with multiple layers of protection 
 
 ## Implementation Details
 
-### Automatic Application
+### Automatic Application - Multi-Stage
 
-The fix is automatically applied when the application starts through:
+The fix is automatically applied at multiple stages:
 
+#### Stage 1: HTML Head (Earliest)
+```html
+<!-- In .storybook/preview-head.html -->
+<script>
+  // Runs before ANY JavaScript loads
+  // Immediate ResizeObserver replacement and console suppression
+</script>
+```
+
+#### Stage 2: Storybook Configuration
+```javascript
+// In .storybook/main.js
+// Inline fix at the top of the file
+// Protects the manager frame
+```
+
+#### Stage 3: Module Imports
 ```typescript
-// In storybook/.storybook/preview.tsx
-import "../src/utils/resizeObserverFix";
+// In .storybook/preview.tsx
+import '../src/utils/universalErrorSuppression';
+import '../src/utils/nuclearResizeObserverFix';
+```
+
+#### Stage 4: React Wrapper
+```typescript
+// In .storybook/preview.tsx
+<ResizeObserverErrorBoundary>
+  <AppTheme>
+    {/* Stories */}
+  </AppTheme>
+</ResizeObserverErrorBoundary>
+```
+
+#### Stage 5: Component Usage
+```typescript
+// In chart components
+<ChartWrapper height={250}>
+  <BarChart {...props} />
+</ChartWrapper>
 ```
 
 ### Error Types Handled
