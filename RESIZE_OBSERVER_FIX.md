@@ -16,34 +16,66 @@ The application was experiencing "ResizeObserver loop completed with undelivered
 
 The fix uses a **defense-in-depth** approach with multiple layers of protection to ensure complete error suppression:
 
-### 1. Enhanced ResizeObserver Fix (`src/utils/resizeObserverFix.ts`)
+### Layer 1: Early HTML Injection (`.storybook/preview-head.html`)
 
-- **Comprehensive error detection**: Catches all known ResizeObserver error messages
-- **ResizeObserver wrapper**: Wraps the native ResizeObserver to catch and suppress loop errors
-- **Console error suppression**: Filters out ResizeObserver errors from console.error and console.warn
-- **Global error handlers**: Catches unhandled ResizeObserver errors at the window level
-- **Polyfill**: Provides fallback for environments without ResizeObserver support
+**Earliest possible intervention** - Runs before ANY JavaScript loads in the preview iframe:
 
-### 2. Improved ChartWrapper Component (`src/components/ChartWrapper.tsx`)
+- **Immediate console override**: Intercepts all console methods (error, warn, log, info, debug)
+- **Safe ResizeObserver replacement**: Replaces native ResizeObserver with a safe implementation
+- **Global error handlers**: Sets up window-level error and rejection handlers
+- **Periodic re-application**: Monitors and re-applies fixes every 2 seconds in case something overrides them
+- **Uses requestAnimationFrame**: Defers ResizeObserver callbacks to prevent synchronous loops
+- **100ms delay between observations**: Prevents rapid-fire resize events
 
-- **Better initialization**: Uses combination of ResizeObserver and timer-based fallbacks
-- **Retry mechanism**: Implements configurable retry logic with exponential backoff
-- **Cleanup handling**: Properly cleans up observers and timeouts
-- **Error boundaries**: Handles ResizeObserver errors gracefully with fallback rendering
-- **Responsive design**: Maintains responsive behavior while suppressing errors
+### Layer 2: Manager Frame Protection (`.storybook/main.js`)
 
-### 3. Enhanced useChartResize Hook (`src/hooks/useChartResize.ts`)
+**Protects the Storybook UI** - Runs in the manager frame:
 
-- **Dimension tracking**: Monitors container dimensions accurately
-- **Validation**: Ensures minimum size requirements before marking as ready
-- **Observer management**: Properly sets up and tears down ResizeObserver instances
-- **Error suppression**: Handles ResizeObserver errors at the hook level
+- **Console suppression**: Filters ResizeObserver messages in the Storybook UI itself
+- **Error event listeners**: Captures errors in capture phase (before they bubble)
+- **Promise rejection handlers**: Catches unhandled promise rejections
+- **Window error handlers**: Sets window.onerror and window.onunhandledrejection
 
-### 4. Simplified Error Boundary (`src/components/ResizeObserverErrorBoundary.tsx`)
+### Layer 3: Module-Level Fixes (`src/utils/`)
+
+**Runtime protection** - Applied during module initialization:
+
+#### `universalErrorSuppression.ts`
+- Comprehensive console method overriding
+- Wraps setTimeout, setInterval, and requestAnimationFrame
+- Multiple error detection patterns
+- Periodic cleanup and re-application
+
+#### `nuclearResizeObserverFix.ts`
+- Complete ResizeObserver replacement implementation
+- Custom callback scheduling with RAF
+- Element tracking and cleanup
+- Silent error suppression throughout
+
+#### `resizeObserverFix.ts`
+- ResizeObserver wrapper class
+- Polyfill for environments without ResizeObserver
+- Aggressive error suppression in all async contexts
+
+### Layer 4: React Error Boundary (`src/components/ResizeObserverErrorBoundary.tsx`)
+
+**React component-level protection**:
 
 - **Focused handling**: Only catches and suppresses ResizeObserver errors
 - **Non-intrusive**: Doesn't interfere with other error types
-- **Debug logging**: Provides debug information without console spam
+- **Lifecycle protection**: Handles errors in mount, update, and unmount phases
+- **Window event listeners**: Additional protection at component level
+- **Debug logging**: Silent operation with optional debug info
+
+### Layer 5: Component-Level Handling (`src/components/ChartWrapper.tsx`)
+
+**Chart-specific protection**:
+
+- **Better initialization**: Uses combination of ResizeObserver and timer-based fallbacks
+- **Retry mechanism**: Implements configurable retry logic (default: 3 attempts)
+- **Cleanup handling**: Properly cleans up observers and timeouts
+- **Error boundaries**: Handles ResizeObserver errors gracefully with fallback rendering
+- **Responsive design**: Maintains responsive behavior while suppressing errors
 
 ## Implementation Details
 
