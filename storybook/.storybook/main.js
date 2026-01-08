@@ -1,59 +1,49 @@
 // UNIVERSAL ERROR SUPPRESSION - Must run before anything else
+// This applies to the manager frame (Storybook UI)
 (function() {
   if (typeof window === 'undefined') return;
 
   // Immediate console override
-  const oe = console.error, ow = console.warn, ol = console.log;
-  const isRO = (m) => String(m||'').toLowerCase().includes('resizeobserver') || String(m||'').toLowerCase().includes('undelivered');
-  console.error = (...a) => { if (a.some(isRO)) return; oe.apply(console, a); };
-  console.warn = (...a) => { if (a.some(isRO)) return; ow.apply(console, a); };
-  console.log = (...a) => { if (a.some(isRO)) return; ol.apply(console, a); };
-
-  // Immediate error handlers
-  window.onerror = (m,s,l,c,e) => String(m||'').toLowerCase().includes('resizeobserver') || (e && String(e.message||'').toLowerCase().includes('resizeobserver'));
-  window.onunhandledrejection = (e) => { if (e.reason && String(e.reason.message||'').toLowerCase().includes('resizeobserver')) e.preventDefault(); };
-})();
-
-// NUCLEAR RESIZEOBSERVER FIX - Applied immediately before Storybook starts
-if (typeof window !== 'undefined') {
-  class NuclearResizeObserver {
-    constructor(callback) { this.callback = callback; this.elements = new Set(); }
-    observe(element) { this.elements.add(element); this.safeCallback(); }
-    unobserve(element) { this.elements.delete(element); }
-    disconnect() { this.elements.clear(); }
-    safeCallback() {
-      requestAnimationFrame(() => {
-        try {
-          const entries = [];
-          this.elements.forEach(el => {
-            if (el.isConnected) {
-              const rect = el.getBoundingClientRect();
-              entries.push({
-                target: el,
-                contentRect: rect,
-                borderBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
-                contentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
-                devicePixelContentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }]
-              });
-            }
-          });
-          if (entries.length > 0) this.callback(entries, this);
-        } catch (e) { /* silent */ }
-      });
-    }
-  }
-
-  window.ResizeObserver = NuclearResizeObserver;
-
-  const originalError = console.error;
-  console.error = (...args) => {
-    const msg = String(args[0] || '').toLowerCase();
-    if (msg.includes('resizeobserver') || msg.includes('undelivered')) return;
-    originalError.apply(console, args);
+  const originalConsole = {
+    error: console.error,
+    warn: console.warn,
+    log: console.log
   };
 
-  window.onerror = (msg) => String(msg).toLowerCase().includes('resizeobserver') ? true : false;
-}
+  const isRO = (m) => {
+    const str = String(m || '').toLowerCase();
+    return str.includes('resizeobserver') ||
+           str.includes('undelivered') ||
+           str.includes('loop limit') ||
+           str.includes('loop completed');
+  };
+
+  console.error = (...a) => { if (a.some(isRO)) return; originalConsole.error.apply(console, a); };
+  console.warn = (...a) => { if (a.some(isRO)) return; originalConsole.warn.apply(console, a); };
+  console.log = (...a) => { if (a.some(isRO)) return; originalConsole.log.apply(console, a); };
+
+  // Immediate error handlers
+  const isROError = (e) => {
+    const msg = String(e?.message || e || '').toLowerCase();
+    return msg.includes('resizeobserver') || msg.includes('undelivered') || msg.includes('loop limit');
+  };
+
+  window.onerror = (m, s, l, c, e) => isROError(m) || isROError(e);
+  window.onunhandledrejection = (e) => { if (isROError(e.reason)) { e.preventDefault(); return true; } };
+
+  // Event listeners for additional coverage
+  window.addEventListener('error', (e) => {
+    if (isROError(e.error) || isROError(e.message)) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }
+  }, true);
+
+  window.addEventListener('unhandledrejection', (e) => {
+    if (isROError(e.reason)) e.preventDefault();
+  }, true);
+})();
 
 /** @type { import('@storybook/react-vite').StorybookConfig } */
 const config = {
