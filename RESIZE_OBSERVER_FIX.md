@@ -246,17 +246,44 @@ const { isReady, containerRef, dimensions } = useChartResize({
 
 ### If ResizeObserver Errors Still Appear
 
-1. Verify the fix is properly imported in your entry point
-2. Check that ChartWrapper is used around chart components
-3. Ensure ResizeObserverErrorBoundary wraps your component tree
-4. Review console for any new error message patterns
+This should be extremely rare with the multi-layer approach, but if you still see errors:
+
+1. **Hard refresh the browser**: Press Ctrl+Shift+R (Cmd+Shift+R on Mac)
+2. **Check preview-head.html**: Ensure `.storybook/preview-head.html` exists and contains the fix
+3. **Verify file order**: preview-head.html should load before preview.tsx
+4. **Check browser console**: Look for any JavaScript errors that might prevent the fix from loading
+5. **Clear browser cache**: Sometimes cached scripts can cause issues
+6. **Restart Storybook**: `npm run dev` (or restart the dev server)
+7. **Check for conflicting scripts**: Other scripts might be overriding ResizeObserver after our fix
+
+### Debug Mode
+
+To temporarily see ResizeObserver errors for debugging (not recommended for regular use):
+
+```typescript
+// In preview-head.html, comment out the fix
+// <script>
+//   ... (comment out the entire script)
+// </script>
+```
+
+Then restart Storybook to see the raw errors.
 
 ### Performance Issues
 
-1. Reduce retry attempts if initialization is slow
-2. Increase retry delays for slower environments
-3. Check for memory leaks in observer cleanup
-4. Monitor for excessive re-renders during resize events
+The fix should have minimal performance impact, but if you notice issues:
+
+1. **Reduce retry attempts**: In ChartWrapper, set `maxRetries={1}` or `maxRetries={2}`
+2. **Increase retry delays**: Set `retryDelay={200}` or higher
+3. **Check memory leaks**: Use browser DevTools → Performance/Memory tabs
+4. **Monitor re-renders**: Use React DevTools Profiler
+5. **Verify cleanup**: Ensure components properly unmount and clean up observers
+
+### Known Limitations
+
+- **Browser compatibility**: Requires modern browsers with ResizeObserver support (Chrome 64+, Firefox 69+, Safari 13.1+)
+- **Polyfill fallback**: Older browsers use a timer-based polyfill with reduced performance
+- **Error suppression scope**: Only suppresses ResizeObserver errors, not other types of errors
 
 ## Related Files
 
