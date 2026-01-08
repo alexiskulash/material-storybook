@@ -149,11 +149,27 @@ Created comprehensive test stories in `stories/ResizeObserverTest.stories.tsx`:
 
 ### How to Verify the Fix
 
-1. Open Storybook development server
-2. Navigate to "Tests/ResizeObserver Fix" stories
-3. Open browser console (F12)
-4. Interact with the test components
-5. Verify no ResizeObserver errors appear in console
+1. **Start Storybook**: `npm run dev` or `npm run storybook`
+2. **Open browser console**: Press F12 or right-click → Inspect → Console
+3. **Navigate to chart stories**:
+   - Dashboard/PageViewsBarChart
+   - Tests/ResizeObserver Fix (if available)
+   - Dashboard/DashboardLayout (has multiple charts)
+4. **Interact with components**:
+   - Switch between stories
+   - Resize the browser window
+   - Toggle between light/dark themes
+   - Resize the Storybook panels
+5. **Check console**: Verify **NO** ResizeObserver errors appear
+   - ✅ Success: Console is clean, no ResizeObserver messages
+   - ❌ Issue: If you still see errors, check the browser console for details
+
+### Expected Behavior
+
+- **No console errors**: ResizeObserver errors should be completely suppressed
+- **Charts render correctly**: All chart components should display properly
+- **Responsive behavior works**: Charts should resize when window/container resizes
+- **No performance impact**: The fix should have minimal overhead
 
 ## Browser Compatibility
 
