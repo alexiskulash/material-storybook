@@ -298,9 +298,28 @@ The fix should have minimal performance impact, but if you notice issues:
 
 ## Related Files
 
-- `src/utils/resizeObserverFix.ts` - Main fix implementation
-- `src/components/ChartWrapper.tsx` - Chart wrapper component
-- `src/hooks/useChartResize.ts` - Chart resize hook
-- `src/components/ResizeObserverErrorBoundary.tsx` - Error boundary
-- `stories/ResizeObserverTest.stories.tsx` - Test stories
-- `.storybook/preview.tsx` - Storybook configuration
+### Configuration Files (Critical)
+- `.storybook/preview-head.html` - **Layer 1**: Earliest fix, runs before all JavaScript
+- `.storybook/main.js` - **Layer 2**: Manager frame protection
+- `.storybook/preview.tsx` - **Layer 3 & 4**: Module imports and React wrapper
+
+### Utility Files
+- `src/utils/universalErrorSuppression.ts` - Universal console and error suppression
+- `src/utils/nuclearResizeObserverFix.ts` - Complete ResizeObserver replacement
+- `src/utils/resizeObserverFix.ts` - Enhanced ResizeObserver wrapper with polyfill
+
+### Component Files
+- `src/components/ChartWrapper.tsx` - **Layer 5**: Chart wrapper component
+- `src/components/ResizeObserverErrorBoundary.tsx` - **Layer 4**: React error boundary
+- `src/components/PageViewsBarChart.tsx` - Example chart component using the fix
+- `src/components/StatCard.tsx` - Example component with SparkLineChart
+
+### Test Files (Optional)
+- `stories/ResizeObserverTest.stories.tsx` - Test stories for verification
+- `stories/UltimateResizeObserverTest.stories.tsx` - Comprehensive stress tests
+- `stories/PageViewsBarChart.stories.tsx` - Chart-specific stories
+- `stories/DashboardLayout.stories.tsx` - Real-world usage example
+
+### Documentation
+- `RESIZE_OBSERVER_FIX.md` - This file
+- `README.md` - Project documentation
