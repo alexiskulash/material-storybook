@@ -6,11 +6,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 // import { MyComponent } from 'mui-vite-demo/src/components/MyComponent';
 
 // For demonstration, we'll create a simple component
-const ExampleComponent = ({ 
-  title, 
-  description, 
+const ExampleComponent = ({
+  title,
+  description,
   variant = 'default',
-  disabled = false 
+  disabled = false
 }: {
   title: string;
   description: string;
@@ -46,6 +46,134 @@ const ExampleComponent = ({
         {description}
       </p>
     </div>
+  );
+};
+
+// Accessible variant with improved accessibility features
+const AccessibleExampleComponent = ({
+  title,
+  description,
+  variant = 'default',
+  disabled = false
+}: {
+  title: string;
+  description: string;
+  variant?: 'default' | 'success' | 'warning' | 'error';
+  disabled?: boolean;
+}) => {
+  const getVariantConfig = () => {
+    switch (variant) {
+      case 'success':
+        return {
+          backgroundColor: '#d4edda',
+          borderColor: '#28a745',
+          color: '#155724',
+          role: 'status',
+          ariaLabel: 'Success notification',
+          icon: '✓'
+        };
+      case 'warning':
+        return {
+          backgroundColor: '#fff3cd',
+          borderColor: '#ffc107',
+          color: '#856404',
+          role: 'alert',
+          ariaLabel: 'Warning notification',
+          icon: '⚠'
+        };
+      case 'error':
+        return {
+          backgroundColor: '#f8d7da',
+          borderColor: '#dc3545',
+          color: '#721c24',
+          role: 'alert',
+          ariaLabel: 'Error notification',
+          icon: '✕'
+        };
+      default:
+        return {
+          backgroundColor: '#f8f9fa',
+          borderColor: '#dee2e6',
+          color: '#212529',
+          role: 'region',
+          ariaLabel: 'Information notification',
+          icon: 'ℹ'
+        };
+    }
+  };
+
+  const config = getVariantConfig();
+
+  return (
+    <section
+      role={config.role}
+      aria-label={config.ariaLabel}
+      aria-disabled={disabled}
+      style={{
+        padding: '16px',
+        border: '2px solid',
+        borderRadius: '8px',
+        borderColor: config.borderColor,
+        backgroundColor: config.backgroundColor,
+        color: config.color,
+        opacity: disabled ? 0.6 : 1,
+        cursor: disabled ? 'not-allowed' : 'default',
+        position: 'relative',
+        outline: 'none',
+      }}
+      tabIndex={disabled ? -1 : 0}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+        <span
+          aria-hidden="true"
+          style={{
+            fontSize: '24px',
+            lineHeight: 1,
+            fontWeight: 'bold',
+            flexShrink: 0
+          }}
+        >
+          {config.icon}
+        </span>
+        <div style={{ flex: 1 }}>
+          <h3
+            id={`component-title-${variant}`}
+            style={{
+              margin: '0 0 8px 0',
+              fontSize: '18px',
+              fontWeight: 600,
+              lineHeight: 1.4
+            }}
+          >
+            {title}
+          </h3>
+          <p
+            id={`component-description-${variant}`}
+            style={{
+              margin: 0,
+              fontSize: '14px',
+              lineHeight: 1.5
+            }}
+          >
+            {description}
+          </p>
+        </div>
+      </div>
+      {/* Screen reader only text */}
+      <span style={{
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        padding: 0,
+        margin: '-1px',
+        overflow: 'hidden',
+        clip: 'rect(0, 0, 0, 0)',
+        whiteSpace: 'nowrap',
+        border: 0
+      }}>
+        {disabled ? 'This notification is disabled and inactive' : ''}
+      </span>
+    </section>
   );
 };
 
@@ -113,4 +241,92 @@ export const Disabled: Story = {
     variant: 'default',
     disabled: true,
   },
-}; 
+};
+
+// Accessible variant stories
+type AccessibleStory = StoryObj<typeof AccessibleExampleComponent>;
+
+export const AccessibleDefault: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Accessible Example Component',
+    description: 'This is an accessibility-friendly variant with semantic HTML, ARIA attributes, and keyboard navigation support.',
+    variant: 'default',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'An accessible variant with improved semantic HTML, ARIA roles and labels, keyboard navigation, and screen reader support. Features include: proper role attributes, focusable regions, visual status indicators, and enhanced color contrast.',
+      },
+    },
+  },
+};
+
+export const AccessibleSuccess: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Success State',
+    description: 'Operation completed successfully. All changes have been saved.',
+    variant: 'success',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Success state with role="status" for screen reader announcements.',
+      },
+    },
+  },
+};
+
+export const AccessibleWarning: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Warning State',
+    description: 'Please review the changes before proceeding. Some items require attention.',
+    variant: 'warning',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Warning state with role="alert" for immediate screen reader attention.',
+      },
+    },
+  },
+};
+
+export const AccessibleError: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Error State',
+    description: 'An error occurred while processing your request. Please try again or contact support.',
+    variant: 'error',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Error state with role="alert" for critical screen reader announcements.',
+      },
+    },
+  },
+};
+
+export const AccessibleDisabled: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Disabled State',
+    description: 'This notification is currently inactive and cannot be interacted with.',
+    variant: 'default',
+    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Disabled state with aria-disabled attribute and hidden screen reader text.',
+      },
+    },
+  },
+};
