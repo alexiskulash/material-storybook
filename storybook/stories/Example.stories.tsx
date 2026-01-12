@@ -242,3 +242,91 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+// Accessible variant stories
+type AccessibleStory = StoryObj<typeof AccessibleExampleComponent>;
+
+export const AccessibleDefault: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Accessible Example Component',
+    description: 'This is an accessibility-friendly variant with semantic HTML, ARIA attributes, and keyboard navigation support.',
+    variant: 'default',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'An accessible variant with improved semantic HTML, ARIA roles and labels, keyboard navigation, and screen reader support. Features include: proper role attributes, focusable regions, visual status indicators, and enhanced color contrast.',
+      },
+    },
+  },
+};
+
+export const AccessibleSuccess: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Success State',
+    description: 'Operation completed successfully. All changes have been saved.',
+    variant: 'success',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Success state with role="status" for screen reader announcements.',
+      },
+    },
+  },
+};
+
+export const AccessibleWarning: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Warning State',
+    description: 'Please review the changes before proceeding. Some items require attention.',
+    variant: 'warning',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Warning state with role="alert" for immediate screen reader attention.',
+      },
+    },
+  },
+};
+
+export const AccessibleError: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Error State',
+    description: 'An error occurred while processing your request. Please try again or contact support.',
+    variant: 'error',
+    disabled: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Error state with role="alert" for critical screen reader announcements.',
+      },
+    },
+  },
+};
+
+export const AccessibleDisabled: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Disabled State',
+    description: 'This notification is currently inactive and cannot be interacted with.',
+    variant: 'default',
+    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Disabled state with aria-disabled attribute and hidden screen reader text.',
+      },
+    },
+  },
+};
