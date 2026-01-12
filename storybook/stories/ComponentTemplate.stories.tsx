@@ -159,3 +159,38 @@ export const Secondary: Story = {
     variant: 'secondary',
   },
 };
+
+// Accessible variant stories
+type AccessibleStory = StoryObj<typeof AccessibleExampleComponent>;
+
+export const AccessiblePrimary: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Accessible Primary Component',
+    content: 'This is an accessibility-friendly variant featuring semantic HTML, proper ARIA labels, keyboard focus management, and enhanced interactive states.',
+    variant: 'primary',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'An accessible variant with semantic article element, ARIA labelledby, keyboard focus indicators, and proper button labeling. Includes hover and focus states for better user interaction.',
+      },
+    },
+  },
+};
+
+export const AccessibleSecondary: AccessibleStory = {
+  render: (args) => <AccessibleExampleComponent {...args} />,
+  args: {
+    title: 'Accessible Secondary Component',
+    content: 'This demonstrates the accessible secondary variant with all the same accessibility features.',
+    variant: 'secondary',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Secondary variant with full accessibility support including proper focus management and ARIA attributes.',
+      },
+    },
+  },
+};
