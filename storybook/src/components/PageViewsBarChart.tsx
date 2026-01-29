@@ -39,7 +39,7 @@ export default function PageViewsBarChart() {
             Page views and downloads for the last 6 months
           </Typography>
         </Stack>
-        <ChartWrapper height={250}>
+        <ChartWrapper height={250} sx={{ mt: 3 }}>
           <BarChart
             borderRadius={8}
             colors={colorPalette}
@@ -81,4 +81,4 @@ export default function PageViewsBarChart() {
       </CardContent>
     </Card>
   );
-} 
+}
