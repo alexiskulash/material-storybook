@@ -4,6 +4,7 @@ import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useTheme } from "@mui/material/styles";
 import ChartWrapper from "./ChartWrapper";
@@ -15,10 +16,13 @@ export default function PageViewsLineChart() {
     (theme.vars || theme).palette.primary.main,
     (theme.vars || theme).palette.primary.light,
   ];
+  const chartId = React.useId();
+  const descriptionId = `${chartId}-description`;
+
   return (
-    <Card variant="outlined" sx={{ width: "100%" }}>
+    <Card variant="outlined" sx={{ width: "100%" }} role="region" aria-labelledby={chartId}>
       <CardContent>
-        <Typography component="h2" variant="subtitle2" gutterBottom>
+        <Typography id={chartId} component="h2" variant="subtitle2" gutterBottom>
           Page views and downloads
         </Typography>
         <Stack sx={{ justifyContent: "space-between" }}>
