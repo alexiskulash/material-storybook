@@ -39,7 +39,7 @@ export default function PageViewsLineChart() {
             Page views and downloads for the last 6 months
           </Typography>
         </Stack>
-        <ChartWrapper height={250}>
+        <ChartWrapper height={250} sx={{ mt: 3 }}>
           <LineChart
             colors={colorPalette}
             xAxis={[
