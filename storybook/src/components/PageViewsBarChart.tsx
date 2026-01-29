@@ -4,6 +4,7 @@ import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { useTheme } from "@mui/material/styles";
 import ChartWrapper from "./ChartWrapper";
@@ -15,10 +16,13 @@ export default function PageViewsBarChart() {
     (theme.vars || theme).palette.primary.main,
     (theme.vars || theme).palette.primary.light,
   ];
+  const chartId = React.useId();
+  const descriptionId = `${chartId}-description`;
+
   return (
-    <Card variant="outlined" sx={{ width: "100%" }}>
+    <Card variant="outlined" sx={{ width: "100%" }} role="region" aria-labelledby={chartId}>
       <CardContent>
-        <Typography component="h2" variant="subtitle2" gutterBottom>
+        <Typography id={chartId} component="h2" variant="subtitle2" gutterBottom>
           Page views and downloads
         </Typography>
         <Stack sx={{ justifyContent: "space-between" }}>
@@ -39,10 +43,30 @@ export default function PageViewsBarChart() {
             Page views and downloads for the last 6 months
           </Typography>
         </Stack>
+        <Box
+          id={descriptionId}
+          sx={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+          }}
+        >
+          Stacked bar chart showing page views, downloads, and conversions data from January to July.
+          Page views range from 2,234 to 4,125. Downloads range from 2,101 to 4,752.
+          Conversions range from 2,038 to 4,693. Total metrics show 1.3 million with an 8% decrease.
+        </Box>
         <ChartWrapper height={250} sx={{ mt: 3 }}>
           <BarChart
             borderRadius={8}
             colors={colorPalette}
+            aria-label="Stacked bar chart displaying page views, downloads, and conversions over time"
+            aria-describedby={descriptionId}
             xAxis={[
               {
                 scaleType: "band",
