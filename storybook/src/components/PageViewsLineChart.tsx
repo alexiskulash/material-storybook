@@ -43,9 +43,29 @@ export default function PageViewsLineChart() {
             Page views and downloads for the last 6 months
           </Typography>
         </Stack>
+        <Box
+          id={descriptionId}
+          sx={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+          }}
+        >
+          Line chart showing page views, downloads, and conversions data from January to July.
+          Page views range from 2,234 to 4,125. Downloads range from 2,101 to 4,752.
+          Conversions range from 2,038 to 4,693. Total metrics show 1.3 million with an 8% decrease.
+        </Box>
         <ChartWrapper height={250} sx={{ mt: 3 }}>
           <LineChart
             colors={colorPalette}
+            aria-label="Line chart displaying page views, downloads, and conversions over time"
+            aria-describedby={descriptionId}
             xAxis={[
               {
                 scaleType: "band",
