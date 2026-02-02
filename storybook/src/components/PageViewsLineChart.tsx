@@ -5,11 +5,11 @@ import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
-import { BarChart } from "@mui/x-charts/BarChart";
+import { LineChart } from "@mui/x-charts/LineChart";
 import { useTheme } from "@mui/material/styles";
 import ChartWrapper from "./ChartWrapper";
 
-export default function PageViewsBarChart() {
+export default function PageViewsLineChart() {
   const theme = useTheme();
   const colorPalette = [
     (theme.vars || theme).palette.primary.dark,
@@ -57,49 +57,47 @@ export default function PageViewsBarChart() {
             border: 0,
           }}
         >
-          Stacked bar chart showing page views, downloads, and conversions data from January to July.
+          Line chart showing page views, downloads, and conversions data from January to July.
           Page views range from 2,234 to 4,125. Downloads range from 2,101 to 4,752.
           Conversions range from 2,038 to 4,693. Total metrics show 1.3 million with an 8% decrease.
         </Box>
         <ChartWrapper height={250} sx={{ mt: 3 }}>
-          <BarChart
-            borderRadius={8}
+          <LineChart
             colors={colorPalette}
-            aria-label="Stacked bar chart displaying page views, downloads, and conversions over time"
+            aria-label="Line chart displaying page views, downloads, and conversions over time"
             aria-describedby={descriptionId}
             xAxis={[
               {
                 scaleType: "band",
-                categoryGapRatio: 0.5,
                 data: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-                height: 24,
               },
             ]}
-            yAxis={[{ width: 50 }]}
             series={[
               {
                 id: "page-views",
                 label: "Page views",
                 data: [2234, 3872, 2998, 4125, 3357, 2789, 2998],
-                stack: "A",
+                curve: "natural",
+                showMark: true,
               },
               {
                 id: "downloads",
                 label: "Downloads",
                 data: [3098, 4215, 2384, 2101, 4752, 3593, 2384],
-                stack: "A",
+                curve: "natural",
+                showMark: true,
               },
               {
                 id: "conversions",
                 label: "Conversions",
                 data: [4051, 2275, 3129, 4693, 3904, 2038, 2275],
-                stack: "A",
+                curve: "natural",
+                showMark: true,
               },
             ]}
             height={250}
-            margin={{ left: 0, right: 0, top: 20, bottom: 0 }}
+            margin={{ left: 50, right: 0, top: 20, bottom: 20 }}
             grid={{ horizontal: true }}
-            hideLegend
           />
         </ChartWrapper>
       </CardContent>
