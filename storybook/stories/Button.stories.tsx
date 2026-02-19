@@ -1,86 +1,107 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 
-// Example: How to import a component from the main project
-// import { Button } from 'mui-vite-demo/components/Button';
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// For demonstration, creating a simple button component
-const Button = ({ 
-  children, 
-  variant = 'contained', 
-  color = 'primary', 
-  size = 'medium',
-  disabled = false,
-  onClick 
-}: {
-  children: React.ReactNode;
-  variant?: 'text' | 'outlined' | 'contained';
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  onClick?: () => void;
-}) => {
-  const getStyles = () => {
-    const baseStyles = {
-      border: 'none',
-      borderRadius: '4px',
-      cursor: disabled ? 'not-allowed' : 'pointer',
-      fontFamily: 'inherit',
-      fontWeight: 500,
-      transition: 'all 0.2s ease',
-      opacity: disabled ? 0.6 : 1,
-    };
+const VARIANTS = ['contained', 'outlined', 'text'] as const;
+const COLORS   = ['primary', 'secondary', 'error', 'warning', 'info', 'success'] as const;
+const SIZES    = ['large', 'medium', 'small'] as const;
 
-    const sizeStyles = {
-      small: { padding: '6px 12px', fontSize: '12px' },
-      medium: { padding: '8px 16px', fontSize: '14px' },
-      large: { padding: '12px 24px', fontSize: '16px' },
-    };
+type ButtonVariant = typeof VARIANTS[number];
+type ButtonColor   = typeof COLORS[number];
+type ButtonSize    = typeof SIZES[number];
 
-    const colorStyles = {
-      primary: { backgroundColor: '#1976d2', color: 'white' },
-      secondary: { backgroundColor: '#9c27b0', color: 'white' },
-      success: { backgroundColor: '#2e7d32', color: 'white' },
-      error: { backgroundColor: '#d32f2f', color: 'white' },
-      info: { backgroundColor: '#0288d1', color: 'white' },
-      warning: { backgroundColor: '#ed6c02', color: 'white' },
-    };
+// Force-simulate hover / focus styles via CSS class injection
+const HoverButton = styled(Button)(() => ({
+  '&.sim-hover': {
+    filter: 'brightness(0.88)',
+  },
+}));
 
-    const variantStyles = {
-      text: {
-        backgroundColor: 'transparent',
-        color: colorStyles[color].backgroundColor,
-        border: 'none',
-      },
-      outlined: {
-        backgroundColor: 'transparent',
-        color: colorStyles[color].backgroundColor,
-        border: `1px solid ${colorStyles[color].backgroundColor}`,
-      },
-      contained: {
-        backgroundColor: colorStyles[color].backgroundColor,
-        color: colorStyles[color].color,
-        border: 'none',
-      },
-    };
+const FocusButton = styled(Button)(() => ({
+  '&.sim-focus': {
+    outline: '3px solid rgba(25, 118, 210, 0.5)',
+    outlineOffset: '2px',
+  },
+}));
 
-    return {
-      ...baseStyles,
-      ...sizeStyles[size],
-      ...variantStyles[variant],
-    };
-  };
+// ─── Section label ────────────────────────────────────────────────────────────
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <button
-      style={getStyles()}
-      disabled={disabled}
-      onClick={onClick}
+    <Typography
+      variant="overline"
+      sx={{ color: 'text.secondary', letterSpacing: 1.5, mb: 0.5, display: 'block' }}
     >
       {children}
-    </button>
+    </Typography>
   );
-};
+}
+
+// ─── Row: one variant across all colors, one size, one state ─────────────────
+
+interface ButtonRowProps {
+  variant: ButtonVariant;
+  size: ButtonSize;
+  disabled?: boolean;
+  simHover?: boolean;
+  simFocus?: boolean;
+}
+
+function ButtonRow({ variant, size, disabled, simHover, simFocus }: ButtonRowProps) {
+  const className = simHover ? 'sim-hover' : simFocus ? 'sim-focus' : '';
+  const Comp = simHover ? HoverButton : simFocus ? FocusButton : Button;
+
+  return (
+    <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+      {COLORS.map((color) => (
+        <Comp
+          key={color}
+          variant={variant}
+          color={color}
+          size={size}
+          disabled={disabled}
+          className={className}
+        >
+          Label
+        </Comp>
+      ))}
+    </Stack>
+  );
+}
+
+// ─── Group: all variants for a given size + state ─────────────────────────────
+
+interface SizeGroupProps {
+  size: ButtonSize;
+  disabled?: boolean;
+  simHover?: boolean;
+  simFocus?: boolean;
+}
+
+function SizeGroup({ size, disabled, simHover, simFocus }: SizeGroupProps) {
+  return (
+    <Stack spacing={1}>
+      {VARIANTS.map((variant) => (
+        <ButtonRow
+          key={variant}
+          variant={variant}
+          size={size}
+          disabled={disabled}
+          simHover={simHover}
+          simFocus={simFocus}
+        />
+      ))}
+    </Stack>
+  );
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta: Meta<typeof Button> = {
   title: 'Components/Button',
@@ -102,62 +123,179 @@ const meta: Meta<typeof Button> = {
       control: { type: 'select' },
       options: ['small', 'medium', 'large'],
     },
-    disabled: {
-      control: { type: 'boolean' },
-    },
+    disabled: { control: { type: 'boolean' } },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+// ─── Individual configurable story ───────────────────────────────────────────
+
+export const Playground: Story = {
   args: {
     variant: 'contained',
     color: 'primary',
-    children: 'Button',
+    size: 'large',
+    children: 'Label',
   },
 };
 
-export const Secondary: Story = {
-  args: {
-    variant: 'contained',
-    color: 'secondary',
-    children: 'Button',
-  },
+// ─── Full component set ───────────────────────────────────────────────────────
+
+export const FullComponentSet: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, p: 2 }}>
+
+      {/* ── ENABLED ── */}
+      <Box>
+        <SectionLabel>Enabled</SectionLabel>
+        <Stack spacing={3}>
+          {SIZES.map((size) => (
+            <Box key={size}>
+              <Typography variant="caption" sx={{ color: 'text.disabled', mb: 0.5, display: 'block' }}>
+                {size.charAt(0).toUpperCase() + size.slice(1)}
+              </Typography>
+              <SizeGroup size={size} />
+            </Box>
+          ))}
+        </Stack>
+      </Box>
+
+      {/* ── HOVER ── */}
+      <Box>
+        <SectionLabel>Hover</SectionLabel>
+        <Stack spacing={3}>
+          {SIZES.map((size) => (
+            <Box key={size}>
+              <Typography variant="caption" sx={{ color: 'text.disabled', mb: 0.5, display: 'block' }}>
+                {size.charAt(0).toUpperCase() + size.slice(1)}
+              </Typography>
+              <SizeGroup size={size} simHover />
+            </Box>
+          ))}
+        </Stack>
+      </Box>
+
+      {/* ── FOCUSED ── */}
+      <Box>
+        <SectionLabel>Focused</SectionLabel>
+        <Stack spacing={3}>
+          {SIZES.map((size) => (
+            <Box key={size}>
+              <Typography variant="caption" sx={{ color: 'text.disabled', mb: 0.5, display: 'block' }}>
+                {size.charAt(0).toUpperCase() + size.slice(1)}
+              </Typography>
+              <SizeGroup size={size} simFocus />
+            </Box>
+          ))}
+        </Stack>
+      </Box>
+
+      {/* ── DISABLED ── */}
+      <Box>
+        <SectionLabel>Disabled</SectionLabel>
+        <Stack spacing={3}>
+          {SIZES.map((size) => (
+            <Box key={size}>
+              <Typography variant="caption" sx={{ color: 'text.disabled', mb: 0.5, display: 'block' }}>
+                {size.charAt(0).toUpperCase() + size.slice(1)}
+              </Typography>
+              <SizeGroup size={size} disabled />
+            </Box>
+          ))}
+        </Stack>
+      </Box>
+
+    </Box>
+  ),
+};
+
+// ─── By Variant ──────────────────────────────────────────────────────────────
+
+export const Contained: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <Stack spacing={2}>
+      {SIZES.map((size) => (
+        <Stack key={size} direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+          {COLORS.map((color) => (
+            <Button key={color} variant="contained" color={color} size={size}>Label</Button>
+          ))}
+        </Stack>
+      ))}
+    </Stack>
+  ),
 };
 
 export const Outlined: Story = {
-  args: {
-    variant: 'outlined',
-    children: 'Button',
-  },
+  parameters: { layout: 'padded' },
+  render: () => (
+    <Stack spacing={2}>
+      {SIZES.map((size) => (
+        <Stack key={size} direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+          {COLORS.map((color) => (
+            <Button key={color} variant="outlined" color={color} size={size}>Label</Button>
+          ))}
+        </Stack>
+      ))}
+    </Stack>
+  ),
 };
 
 export const Text: Story = {
-  args: {
-    variant: 'text',
-    children: 'Button',
-  },
+  parameters: { layout: 'padded' },
+  render: () => (
+    <Stack spacing={2}>
+      {SIZES.map((size) => (
+        <Stack key={size} direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+          {COLORS.map((color) => (
+            <Button key={color} variant="text" color={color} size={size}>Label</Button>
+          ))}
+        </Stack>
+      ))}
+    </Stack>
+  ),
 };
 
-export const Large: Story = {
-  args: {
-    size: 'large',
-    children: 'Button',
-  },
-};
+// ─── By State ────────────────────────────────────────────────────────────────
 
-export const Small: Story = {
-  args: {
-    size: 'small',
-    children: 'Button',
-  },
+export const Enabled: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <Stack spacing={3}>
+      {SIZES.map((size) => (
+        <SizeGroup key={size} size={size} />
+      ))}
+    </Stack>
+  ),
 };
 
 export const Disabled: Story = {
-  args: {
-    disabled: true,
-    children: 'Disabled Button',
-  },
-}; 
+  parameters: { layout: 'padded' },
+  render: () => (
+    <Stack spacing={3}>
+      {SIZES.map((size) => (
+        <SizeGroup key={size} size={size} disabled />
+      ))}
+    </Stack>
+  ),
+};
+
+// ─── By Size ─────────────────────────────────────────────────────────────────
+
+export const Large: Story = {
+  parameters: { layout: 'padded' },
+  render: () => <SizeGroup size="large" />,
+};
+
+export const Medium: Story = {
+  parameters: { layout: 'padded' },
+  render: () => <SizeGroup size="medium" />,
+};
+
+export const Small: Story = {
+  parameters: { layout: 'padded' },
+  render: () => <SizeGroup size="small" />,
+};
