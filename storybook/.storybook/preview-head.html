@@ -1,180 +1,40 @@
 <script>
-  // CRITICAL: This must run BEFORE any other JavaScript
-  // Aggressive ResizeObserver error suppression for MUI X Charts
-  
+  // Suppress ResizeObserver loop warnings - these are benign browser notifications
+  // that occur when resize callbacks trigger layout changes within the same frame.
   (function() {
     'use strict';
-    
-    // 1. IMMEDIATE CONSOLE OVERRIDE - Suppress all ResizeObserver console output
-    const originalConsole = {
-      error: console.error.bind(console),
-      warn: console.warn.bind(console),
-      log: console.log.bind(console),
-      info: console.info.bind(console),
-      debug: console.debug.bind(console)
-    };
-    
-    const isResizeObserverMessage = function(msg) {
+
+    var isResizeObserverMessage = function(msg) {
       if (!msg) return false;
-      const str = String(msg).toLowerCase();
-      return str.includes('resizeobserver') || 
-             str.includes('resize observer') ||
+      var str = String(msg).toLowerCase();
+      return str.includes('resizeobserver') ||
              str.includes('undelivered notifications') ||
              str.includes('loop limit exceeded') ||
              str.includes('loop completed');
     };
-    
-    console.error = function() {
-      if (Array.from(arguments).some(isResizeObserverMessage)) return;
-      originalConsole.error.apply(console, arguments);
+
+    // Suppress from console
+    var origError = console.error.bind(console);
+    var origWarn  = console.warn.bind(console);
+    console.error = function() { if ([].some.call(arguments, isResizeObserverMessage)) return; origError.apply(console, arguments); };
+    console.warn  = function() { if ([].some.call(arguments, isResizeObserverMessage)) return; origWarn.apply(console, arguments); };
+
+    // Suppress the ErrorEvent fired by the browser
+    var isResizeObserverError = function(val) {
+      if (!val) return false;
+      var msg = String(val.message || val).toLowerCase();
+      return msg.includes('resizeobserver') || msg.includes('undelivered') || msg.includes('loop limit');
     };
-    
-    console.warn = function() {
-      if (Array.from(arguments).some(isResizeObserverMessage)) return;
-      originalConsole.warn.apply(console, arguments);
-    };
-    
-    console.log = function() {
-      if (Array.from(arguments).some(isResizeObserverMessage)) return;
-      originalConsole.log.apply(console, arguments);
-    };
-    
-    console.info = function() {
-      if (Array.from(arguments).some(isResizeObserverMessage)) return;
-      originalConsole.info.apply(console, arguments);
-    };
-    
-    console.debug = function() {
-      if (Array.from(arguments).some(isResizeObserverMessage)) return;
-      originalConsole.debug.apply(console, arguments);
-    };
-    
-    // 2. REPLACE RESIZEOBSERVER WITH SAFE VERSION
-    if (window.ResizeObserver) {
-      const NativeResizeObserver = window.ResizeObserver;
-      
-      window.ResizeObserver = class SafeResizeObserver {
-        constructor(callback) {
-          this.callback = callback;
-          this.elements = new Set();
-          this.rafId = null;
-        }
-        
-        observe(element) {
-          this.elements.add(element);
-          this.scheduleUpdate();
-        }
-        
-        unobserve(element) {
-          this.elements.delete(element);
-        }
-        
-        disconnect() {
-          this.elements.clear();
-          if (this.rafId) {
-            cancelAnimationFrame(this.rafId);
-            this.rafId = null;
-          }
-        }
-        
-        scheduleUpdate() {
-          if (this.rafId) return;
-          
-          this.rafId = requestAnimationFrame(() => {
-            this.rafId = null;
-            
-            try {
-              const entries = [];
-              this.elements.forEach(function(element) {
-                if (element.isConnected) {
-                  const rect = element.getBoundingClientRect();
-                  entries.push({
-                    target: element,
-                    contentRect: rect,
-                    borderBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
-                    contentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
-                    devicePixelContentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }]
-                  });
-                }
-              });
-              
-              if (entries.length > 0) {
-                this.callback(entries, this);
-              }
-            } catch (e) {
-              // Silent suppression
-            }
-            
-            // Schedule next check with delay to prevent loops
-            if (this.elements.size > 0) {
-              setTimeout(() => {
-                if (this.elements.size > 0) {
-                  this.scheduleUpdate();
-                }
-              }, 100); // Increased delay to prevent loops
-            }
-          });
-        }
-      };
-    }
-    
-    // 3. GLOBAL ERROR HANDLERS
-    const isResizeObserverError = function(error) {
-      if (!error) return false;
-      const msg = String(error.message || error).toLowerCase();
-      const stack = String(error.stack || '').toLowerCase();
-      return msg.includes('resizeobserver') || 
-             msg.includes('undelivered') ||
-             msg.includes('loop limit') ||
-             stack.includes('resizeobserver');
-    };
-    
-    window.addEventListener('error', function(event) {
-      if (isResizeObserverError(event.error) || isResizeObserverError(event.message)) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        return false;
+
+    window.addEventListener('error', function(e) {
+      if (isResizeObserverError(e.message) || isResizeObserverError(e.error)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
       }
     }, true);
-    
-    window.addEventListener('unhandledrejection', function(event) {
-      if (isResizeObserverError(event.reason)) {
-        event.preventDefault();
-        return false;
-      }
-    }, true);
-    
-    window.onerror = function(message, source, lineno, colno, error) {
-      if (isResizeObserverError(error) || isResizeObserverError(message)) {
-        return true; // Suppress the error
-      }
-      return false;
+
+    window.onerror = function(msg, src, line, col, err) {
+      if (isResizeObserverError(err) || isResizeObserverError(msg)) return true;
     };
-    
-    window.onunhandledrejection = function(event) {
-      if (isResizeObserverError(event.reason)) {
-        event.preventDefault();
-      }
-    };
-    
-    // 4. PERIODIC RE-APPLICATION (in case something overrides our fix)
-    setInterval(function() {
-      // Re-check console methods
-      if (!console.error.toString().includes('isResizeObserverMessage')) {
-        console.error = function() {
-          if (Array.from(arguments).some(isResizeObserverMessage)) return;
-          originalConsole.error.apply(console, arguments);
-        };
-      }
-      
-      if (!console.warn.toString().includes('isResizeObserverMessage')) {
-        console.warn = function() {
-          if (Array.from(arguments).some(isResizeObserverMessage)) return;
-          originalConsole.warn.apply(console, arguments);
-        };
-      }
-    }, 2000);
-    
   })();
 </script>
