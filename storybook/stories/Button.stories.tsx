@@ -1,86 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-
-// Example: How to import a component from the main project
-// import { Button } from 'mui-vite-demo/components/Button';
-
-// For demonstration, creating a simple button component
-const Button = ({ 
-  children, 
-  variant = 'contained', 
-  color = 'primary', 
-  size = 'medium',
-  disabled = false,
-  onClick 
-}: {
-  children: React.ReactNode;
-  variant?: 'text' | 'outlined' | 'contained';
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  onClick?: () => void;
-}) => {
-  const getStyles = () => {
-    const baseStyles = {
-      border: 'none',
-      borderRadius: '4px',
-      cursor: disabled ? 'not-allowed' : 'pointer',
-      fontFamily: 'inherit',
-      fontWeight: 500,
-      transition: 'all 0.2s ease',
-      opacity: disabled ? 0.6 : 1,
-    };
-
-    const sizeStyles = {
-      small: { padding: '6px 12px', fontSize: '12px' },
-      medium: { padding: '8px 16px', fontSize: '14px' },
-      large: { padding: '12px 24px', fontSize: '16px' },
-    };
-
-    const colorStyles = {
-      primary: { backgroundColor: '#1976d2', color: 'white' },
-      secondary: { backgroundColor: '#9c27b0', color: 'white' },
-      success: { backgroundColor: '#2e7d32', color: 'white' },
-      error: { backgroundColor: '#d32f2f', color: 'white' },
-      info: { backgroundColor: '#0288d1', color: 'white' },
-      warning: { backgroundColor: '#ed6c02', color: 'white' },
-    };
-
-    const variantStyles = {
-      text: {
-        backgroundColor: 'transparent',
-        color: colorStyles[color].backgroundColor,
-        border: 'none',
-      },
-      outlined: {
-        backgroundColor: 'transparent',
-        color: colorStyles[color].backgroundColor,
-        border: `1px solid ${colorStyles[color].backgroundColor}`,
-      },
-      contained: {
-        backgroundColor: colorStyles[color].backgroundColor,
-        color: colorStyles[color].color,
-        border: 'none',
-      },
-    };
-
-    return {
-      ...baseStyles,
-      ...sizeStyles[size],
-      ...variantStyles[variant],
-    };
-  };
-
-  return (
-    <button
-      style={getStyles()}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-};
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 
 const meta: Meta<typeof Button> = {
   title: 'Components/Button',
@@ -115,7 +36,8 @@ export const Primary: Story = {
   args: {
     variant: 'contained',
     color: 'primary',
-    children: 'Button',
+    size: 'large',
+    children: 'Label',
   },
 };
 
@@ -123,41 +45,95 @@ export const Secondary: Story = {
   args: {
     variant: 'contained',
     color: 'secondary',
-    children: 'Button',
+    size: 'large',
+    children: 'Label',
   },
 };
 
 export const Outlined: Story = {
   args: {
     variant: 'outlined',
-    children: 'Button',
+    color: 'primary',
+    size: 'large',
+    children: 'Label',
   },
 };
 
 export const Text: Story = {
   args: {
     variant: 'text',
-    children: 'Button',
+    color: 'primary',
+    size: 'large',
+    children: 'Label',
   },
 };
 
 export const Large: Story = {
   args: {
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
-    children: 'Button',
+    children: 'Label',
+  },
+};
+
+export const Medium: Story = {
+  args: {
+    variant: 'contained',
+    color: 'primary',
+    size: 'medium',
+    children: 'Label',
   },
 };
 
 export const Small: Story = {
   args: {
+    variant: 'contained',
+    color: 'primary',
     size: 'small',
-    children: 'Button',
+    children: 'Label',
   },
 };
 
 export const Disabled: Story = {
   args: {
+    variant: 'contained',
+    color: 'primary',
+    size: 'large',
     disabled: true,
-    children: 'Disabled Button',
+    children: 'Label',
   },
-}; 
+};
+
+export const AllVariants: Story = {
+  render: () => (
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Button variant="contained" color="primary" size="large">Label</Button>
+      <Button variant="outlined" color="primary" size="large">Label</Button>
+      <Button variant="text" color="primary" size="large">Label</Button>
+    </Stack>
+  ),
+};
+
+export const AllSizes: Story = {
+  render: () => (
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Button variant="contained" color="primary" size="small">Label</Button>
+      <Button variant="contained" color="primary" size="medium">Label</Button>
+      <Button variant="contained" color="primary" size="large">Label</Button>
+    </Stack>
+  ),
+};
+
+export const AllColors: Story = {
+  render: () => (
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Button variant="contained" color="primary" size="large">Label</Button>
+      <Button variant="contained" color="secondary" size="large">Label</Button>
+      <Button variant="contained" color="success" size="large">Label</Button>
+      <Button variant="contained" color="error" size="large">Label</Button>
+      <Button variant="contained" color="info" size="large">Label</Button>
+      <Button variant="contained" color="warning" size="large">Label</Button>
+    </Stack>
+  ),
+};
