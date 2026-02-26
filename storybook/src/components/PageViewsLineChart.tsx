@@ -21,7 +21,7 @@ export default function PageViewsLineChart() {
         <Typography component="h2" variant="subtitle2" gutterBottom>
           Page views and downloads
         </Typography>
-        <Stack sx={{ justifyContent: "space-between" }}>
+        <Stack sx={{ justifyContent: "space-between", gap: 1 }}>
           <Stack
             direction="row"
             sx={{
