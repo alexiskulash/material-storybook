@@ -10,9 +10,7 @@ import '../src/utils/universalErrorSuppression';
 import '../src/utils/nuclearResizeObserverFix';
 
 import React from 'react';
-import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme } from '@mui/material/styles';
 import AppTheme from '../src/shared-theme/AppTheme';
 import ResizeObserverErrorBoundary from '../src/components/ResizeObserverErrorBoundary';
 
@@ -55,34 +53,18 @@ const preview = {
   decorators: [
     (Story, context) => {
       const themeMode = context.globals.theme;
-      
-      // Create a theme that matches your main project
-      const theme = createTheme({
-        palette: {
-          mode: themeMode,
-          primary: {
-            main: '#1976d2',
-          },
-          background: {
-            default: themeMode === 'dark' ? '#121212' : '#fafafa',
-            paper: themeMode === 'dark' ? '#1e1e1e' : '#ffffff',
-          },
-        },
-      });
 
       return (
         <ResizeObserverErrorBoundary>
           <AppTheme>
-            <ThemeProvider theme={theme}>
-              <CssBaseline enableColorScheme />
-              <div style={{ 
-                backgroundColor: themeMode === 'dark' ? '#121212' : '#fafafa',
-                minHeight: '100vh',
-                padding: '20px'
-              }}>
-                <Story />
-              </div>
-            </ThemeProvider>
+            <CssBaseline enableColorScheme />
+            <div style={{
+              backgroundColor: themeMode === 'dark' ? '#121212' : '#fafafa',
+              minHeight: '100vh',
+              padding: '20px'
+            }}>
+              <Story />
+            </div>
           </AppTheme>
         </ResizeObserverErrorBoundary>
       );
