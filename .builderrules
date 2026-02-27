@@ -1,0 +1,62 @@
+# Builder.io Rules for Material UI Storybook Project
+
+## ResizeObserver Error Handling
+
+### Context
+The "ResizeObserver loop completed with undelivered notifications" error is a browser safety mechanism that prevents infinite resize loops. According to the W3C spec author, this error can be safely ignored. It only appears in error monitoring tools (not in the browser console) because it's dispatched through window.onerror.
+
+### Why This Happens
+- MUI X Charts (BarChart, SparkLineChart, etc.) use ResizeObserver internally
+- ResizeObserver can trigger loop detection when rapid resize events occur
+- The browser breaks the cycle by deferring notifications and firing an error event
+- This is normal behavior, not a bug
+
+### The Correct Solution
+DO NOT attempt to replace ResizeObserver or override console methods. Instead, add a simple error handler that ignores this specific error:
+
+
+// In .storybook/preview-head.html or at the top of your app
+window.addEventListener('error', (e) => {
+  if (
+    e.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+    e.message === 'ResizeObserver loop limit exceeded'
+  ) {
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+    return false;
+  }
+}, true);
+```
+
+### What NOT to Do
+- ❌ Do NOT replace the native ResizeObserver implementation
+- ❌ Do NOT override console.error/warn/log
+- ❌ Do NOT create complex multi-layer error suppression systems
+- ❌ Do NOT wrap ResizeObserver in custom classes
+- ❌ Do NOT use requestAnimationFrame workarounds in ResizeObserver
+- ❌ Do NOT create React Error Boundaries specifically for ResizeObserver
+
+### Implementation Rules
+1. **Keep it simple**: Only add a window error event listener
+2. **Target the error**: Check for the exact error messages (both Firefox and Chrome variants)
+3. **Early application**: Add the listener in preview-head.html before other scripts load
+4. **One location**: Do not add multiple layers of the same fix
+5. **Let other errors through**: Only suppress ResizeObserver errors
+
+### File Locations
+- Primary fix: `storybook/.storybook/preview-head.html`
+- Remove any other ResizeObserver-related utilities or fixes
+- Remove any ResizeObserver error boundaries or wrappers
+
+### When You See This Error
+If the user reports ResizeObserver errors:
+1. Check if the simple window.addEventListener fix is in place
+2. Ensure it's in preview-head.html for earliest execution
+3. Verify the error messages match both variants (Firefox and Chrome)
+4. Confirm no other code is overriding window.addEventListener
+5. Do NOT add additional layers of complexity
+
+### References
+- W3C ResizeObserver Spec: https://drafts.csswg.org/resize-observer/
+- The error is benign and can be safely ignored per spec author
+- Modern frameworks (React, MUI) commonly trigger this during normal operation
